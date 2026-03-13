@@ -39,3 +39,16 @@ func (h *DepartmentHandler) CreateDepartment(c fiber.Ctx) error {
 		"id": id,
 	})
 }
+
+func (h *DepartmentHandler) GetAllDepartment(c fiber.Ctx) error {
+
+	departments, err := h.Service.GetAllDepartment(c.Context())
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(departments)
+}
+

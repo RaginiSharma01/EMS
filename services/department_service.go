@@ -23,3 +23,7 @@ func (s *DepartmentService) CreateDepartment(
 
 	return s.Repo.CreateDepartment(ctx, dept)
 }
+
+func (s *DepartmentService) GetAllDepartment(ctx context.Context) ([]models.Department, error) {
+	return s.Repo.GetAllDepartment(ctx)
+}
