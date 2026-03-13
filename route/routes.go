@@ -6,11 +6,14 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
-func SetupEmployeeRoutes(app *fiber.App, employeeHandler *handler.EmployeeHandler) {
+func SetupEmployeeRoutes(app *fiber.App, employeeHandler *handler.EmployeeHandler, departmentHandler *handler.DepartmentHandler) {
 
 	employee := app.Group("/employees")
 
 	employee.Post("/", employeeHandler.CreateEmployee)
 	employee.Get("/all", employeeHandler.GetAllEmployee)
+
+	departments := app.Group("/departments")
+	departments.Post("/", departmentHandler.CreateDepartment)
 
 }

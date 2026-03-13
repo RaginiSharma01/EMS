@@ -27,12 +27,17 @@ func main() {
 		return c.SendString("server running")
 	})
 
+	// emp
 	employeeRepo := repository.NewEmployeeRepository(database.Pool)
 	employeeService := services.NewEmployeeService(employeeRepo)
 	employeeHandler := handler.NewEmployeeHandler(employeeService)
-	route.SetupEmployeeRoutes(app, employeeHandler)
 
+	//dpt
+	departmentRepo := repository.NewDepartment(database.Pool)
+	departmentService := services.NewDepartmentService(departmentRepo)
+	departmentHandler := handler.NewDepartmentHandler(departmentService)
+
+	route.SetupEmployeeRoutes(app, employeeHandler, departmentHandler)
 	log.Fatal(app.Listen(cfg.ServerPort))
-
 	defer database.Pool.Close()
 }
