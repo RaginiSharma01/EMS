@@ -28,11 +28,8 @@ func main() {
 	})
 
 	employeeRepo := repository.NewEmployeeRepository(database.Pool)
-
 	employeeService := services.NewEmployeeService(employeeRepo)
-
 	employeeHandler := handler.NewEmployeeHandler(employeeService)
-
 	route.SetupEmployeeRoutes(app, employeeHandler)
 
 	log.Fatal(app.Listen(cfg.ServerPort))

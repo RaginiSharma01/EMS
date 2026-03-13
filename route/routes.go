@@ -11,5 +11,6 @@ func SetupEmployeeRoutes(app *fiber.App, employeeHandler *handler.EmployeeHandle
 	employee := app.Group("/employees")
 
 	employee.Post("/", employeeHandler.CreateEmployee)
+	employee.Get("/all", employeeHandler.GetAllEmployee)
 
 }
