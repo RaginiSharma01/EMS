@@ -21,26 +21,23 @@ func (r *EmployeeRepository) GetAllEmployee(ctx context.Context) ([]models.Emplo
 
 	query := `
 	SELECT 
-	e.id,
-	e.name,
-	e.email,
-	e.department_id,
-	e.salary,
-	e.location,
-	e.joining_date,
-	e.created_at,
-	e.updated_at
-	FROM employees_data e
-	LEFT JOIN departments d
-	ON e.department_id = d.dept_id
-	ORDER BY e.created_at DESC
+	id,
+	name,
+	email,
+	department_id,
+	salary,
+	location,
+	joining_date,
+	created_at,
+	updated_at
+	FROM employees_data
+	ORDER BY created_at DESC
 	`
 
 	rows, err := r.DB.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
-
 	defer rows.Close()
 
 	var employees []models.Employee
