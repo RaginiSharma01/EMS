@@ -42,9 +42,18 @@ func main() {
 	assetService := services.NewAssetService(assetRepo)
 	assetHandler := handler.NewAssetHandler(assetService)
 
-	
+	//salary category
+	salaryRepo := repository.NewSalaryCategoryRepository(database.Pool)
+	salaryService := services.NewSalaryCategoryService(salaryRepo)
+	salaryHandler := handler.NewSalaryCategoryHandler(salaryService)
 
-	route.SetupEmployeeRoutes(app, employeeHandler, departmentHandler, assetHandler)
+	route.SetupEmployeeRoutes(
+		app,
+		employeeHandler,
+		departmentHandler,
+		assetHandler,
+		salaryHandler,
+	)
 	log.Fatal(app.Listen(cfg.ServerPort))
 	defer database.Pool.Close()
 }
