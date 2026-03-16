@@ -21,10 +21,9 @@ func (h *DepartmentHandler) CreateDepartment(c fiber.Ctx) error {
 
 	var dept models.Department
 
-	err := c.Bind().Body(&dept)
-	if err != nil {
+	if err := c.Bind().Body(&dept); err != nil {
 		return c.Status(400).JSON(fiber.Map{
-			"error": "invalid request",
+			"error": err.Error(),
 		})
 	}
 
@@ -51,4 +50,3 @@ func (h *DepartmentHandler) GetAllDepartment(c fiber.Ctx) error {
 
 	return c.JSON(departments)
 }
-

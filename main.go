@@ -42,6 +42,8 @@ func main() {
 	assetService := services.NewAssetService(assetRepo)
 	assetHandler := handler.NewAssetHandler(assetService)
 
+	
+
 	route.SetupEmployeeRoutes(app, employeeHandler, departmentHandler, assetHandler)
 	log.Fatal(app.Listen(cfg.ServerPort))
 	defer database.Pool.Close()

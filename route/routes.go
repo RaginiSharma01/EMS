@@ -6,7 +6,12 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
-func SetupEmployeeRoutes(app *fiber.App, employeeHandler *handler.EmployeeHandler, departmentHandler *handler.DepartmentHandler, assetHandler *handler.AssetHandler) {
+func SetupEmployeeRoutes(
+	app *fiber.App,
+	employeeHandler *handler.EmployeeHandler,
+	departmentHandler *handler.DepartmentHandler,
+	assetHandler *handler.AssetHandler,
+) {
 
 	employee := app.Group("/employees")
 
@@ -19,4 +24,5 @@ func SetupEmployeeRoutes(app *fiber.App, employeeHandler *handler.EmployeeHandle
 
 	assets := app.Group("/assets")
 	assets.Post("/", assetHandler.CreateAsset)
+	assets.Get("/all", assetHandler.GetAllAssets)
 }

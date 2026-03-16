@@ -39,3 +39,15 @@ func (h *AssetHandler) CreateAsset(c fiber.Ctx) error {
 		"id": id,
 	})
 }
+
+func (h *AssetHandler) GetAllAssets(c fiber.Ctx) error {
+
+	assets, err := h.Service.GetAllAssets(c.Context())
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(assets)
+}

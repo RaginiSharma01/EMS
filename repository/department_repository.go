@@ -45,13 +45,17 @@ func (r *DepartmentRepository) CreateDepartment(
 }
 
 func (r *DepartmentRepository) GetAllDepartment(ctx context.Context) ([]models.Department, error) {
-	query := `SELECT dept_id, name, location, created_at, updated_at, FROM departments ORDER BY created_at DESC`
+
+	query := `
+	SELECT dept_id, name, location, created_at, updated_at
+	FROM departments
+	ORDER BY created_at DESC
+	`
 
 	rows, err := r.DB.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
-
 	defer rows.Close()
 
 	var departments []models.Department
@@ -66,11 +70,13 @@ func (r *DepartmentRepository) GetAllDepartment(ctx context.Context) ([]models.D
 			&dept.CreatedAt,
 			&dept.UpdatedAt,
 		)
+
 		if err != nil {
 			return nil, err
 		}
+
 		departments = append(departments, dept)
 	}
-	return departments, nil
 
+	return departments, nil
 }

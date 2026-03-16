@@ -16,11 +16,17 @@ func NewEmployeeService(repo *repository.EmployeeRepository) *EmployeeService {
 	}
 }
 
-func (s *EmployeeService) CreateEmployee(ctx context.Context, emp models.Employee) (string, error) {
-	return s.Repo.CreateEmployee(ctx, emp)
+func (s *EmployeeService) GetAllEmployee(ctx context.Context) ([]models.Employee, error) {
+
+	return s.Repo.GetAllEmployee(ctx)
+
 }
 
-func (s *EmployeeService) GetAllEmployee(ctx context.Context, page int, limit int) ([]models.Employee, error) {
-	offset := (page - 1) * limit
-	return s.Repo.GetAllEmployee(ctx, limit, offset)
+func (s *EmployeeService) CreateEmployee(
+	ctx context.Context,
+	emp models.Employee,
+) (string, error) {
+
+	return s.Repo.CreateEmployee(ctx, emp)
+
 }

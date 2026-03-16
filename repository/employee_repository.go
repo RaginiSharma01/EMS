@@ -11,51 +11,36 @@ type EmployeeRepository struct {
 	DB *pgxpool.Pool
 }
 
-
-func NewEmployeeRepository (pool *pgxpool.Pool) *EmployeeRepository{
+func NewEmployeeRepository(pool *pgxpool.Pool) *EmployeeRepository {
 	return &EmployeeRepository{
-		DB:pool,
+		DB: pool,
 	}
 }
 
-func(r *EmployeeRepository) CreateEmployee(ctx context.Context,emp models.Employee) (string , error){
+func (r *EmployeeRepository) GetAllEmployee(ctx context.Context) ([]models.Employee, error) {
+
 	query := `
-	INSERT INTO employees_data
-	(name , email , department_id,salary , location , joining_date)
-	values($1 , $2 , $3, $4 , $5 ,$6)
-	RETURNING id
+	SELECT 
+	e.id,
+	e.name,
+	e.email,
+	e.department_id,
+	e.salary,
+	e.location,
+	e.joining_date,
+	e.created_at,
+	e.updated_at
+	FROM employees_data e
+	LEFT JOIN departments d
+	ON e.department_id = d.dept_id
+	ORDER BY e.created_at DESC
 	`
 
-	var id string
-
-	err := r.DB.QueryRow(ctx,query,
-	emp.Name,
-	emp.Email,
-	emp.DepartmentID,
-	emp.Salary,
-	emp.Location,
-	emp.JoiningDate,
-	).Scan(&id)
-
-	if err !=nil{
-		return "" , err
-	}
-	return id , nil
-
-}
-
-func (r *EmployeeRepository) GetAllEmployee(ctx context.Context,limit int,offset int,)([]models.Employee, error) {
-
-	query := `SELECT id, name, email, department_id, salary, location, joining_date
-	FROM employees_data
-	ORDER BY created_at DESC
-	LIMIT $1 OFFSET $2
-	`
-
-	rows, err := r.DB.Query(ctx, query, limit, offset)
+	rows, err := r.DB.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var employees []models.Employee
@@ -72,6 +57,8 @@ func (r *EmployeeRepository) GetAllEmployee(ctx context.Context,limit int,offset
 			&emp.Salary,
 			&emp.Location,
 			&emp.JoiningDate,
+			&emp.CreatedAt,
+			&emp.UpdatedAt,
 		)
 
 		if err != nil {
@@ -82,4 +69,36 @@ func (r *EmployeeRepository) GetAllEmployee(ctx context.Context,limit int,offset
 	}
 
 	return employees, nil
+}
+
+func (r *EmployeeRepository) CreateEmployee(
+	ctx context.Context,
+	emp models.Employee,
+) (string, error) {
+
+	query := `
+	INSERT INTO employees_data
+	(name, email, department_id, salary, location, joining_date)
+	VALUES ($1,$2,$3,$4,$5,$6)
+	RETURNING id
+	`
+
+	var id string
+
+	err := r.DB.QueryRow(
+		ctx,
+		query,
+		emp.Name,
+		emp.Email,
+		emp.DepartmentID,
+		emp.Salary,
+		emp.Location,
+		emp.JoiningDate,
+	).Scan(&id)
+
+	if err != nil {
+		return "", err
+	}
+
+	return id, nil
 }

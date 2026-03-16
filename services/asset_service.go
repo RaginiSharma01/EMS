@@ -23,3 +23,9 @@ func (s *AssetService) CreateAsset(
 
 	return s.Repo.CreateAsset(ctx, asset)
 }
+
+func (s *AssetService) GetAllAssets(ctx context.Context) ([]models.Asset, error) {
+
+	return s.Repo.GetAllAssets(ctx)
+
+}

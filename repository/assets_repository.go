@@ -48,3 +48,38 @@ func (r *AssetsRepository) CreateAsset(
 
 	return id, nil
 }
+
+func (r *AssetsRepository) GetAllAssets(ctx context.Context) ([]models.Asset, error) {
+	query := `
+	SELECT asset_id, asset_name, asset_type, asset_price, dept_id
+	FROM assets
+	`
+
+	rows, err := r.DB.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var assets []models.Asset
+
+	for rows.Next() {
+		var asset models.Asset
+
+		err := rows.Scan(
+			&asset.AssetID,
+			&asset.AssetName,
+			&asset.AssetType,
+			&asset.AssetPrice,
+			&asset.DeptID,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		assets = append(assets, asset)
+	}
+
+	return assets, nil
+}
