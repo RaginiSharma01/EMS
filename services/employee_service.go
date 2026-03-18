@@ -30,3 +30,7 @@ func (s *EmployeeService) CreateEmployee(
 	return s.Repo.CreateEmployee(ctx, emp)
 
 }
+
+func (s *EmployeeService) UpdateProfileImage(ctx context.Context, id string, filename string) error {
+	return s.Repo.UpdateProfileImage(ctx, id, filename)
+}

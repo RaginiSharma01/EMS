@@ -12,4 +12,5 @@ type Employee struct {
 	JoiningDate  time.Time `json:"joining_date"`
 	CreatedAt    time.Time `json:"created_at,omitempty"`
 	UpdatedAt    time.Time `json:"updated_at,omitempty"`
+	ProfileImage  string  `json:"profile_image"`
 }

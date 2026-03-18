@@ -20,19 +20,20 @@ func NewEmployeeRepository(pool *pgxpool.Pool) *EmployeeRepository {
 func (r *EmployeeRepository) GetAllEmployee(ctx context.Context) ([]models.Employee, error) {
 
 	query := `
-	SELECT 
-	id,
-	name,
-	email,
-	department_id,
-	salary,
-	location,
-	joining_date,
-	created_at,
-	updated_at
-	FROM employees_data
-	ORDER BY created_at DESC
-	`
+SELECT 
+id,
+name,
+email,
+department_id, //name
+salary,
+location,
+joining_date,
+created_at,
+updated_at,
+profile_image
+FROM employees_data
+ORDER BY created_at DESC //assets , 
+`
 
 	rows, err := r.DB.Query(ctx, query)
 	if err != nil {
@@ -56,6 +57,8 @@ func (r *EmployeeRepository) GetAllEmployee(ctx context.Context) ([]models.Emplo
 			&emp.JoiningDate,
 			&emp.CreatedAt,
 			&emp.UpdatedAt,
+			&emp.ProfileImage,
+			&emp.ProfileImage,
 		)
 
 		if err != nil {
@@ -98,4 +101,11 @@ func (r *EmployeeRepository) CreateEmployee(
 	}
 
 	return id, nil
+}
+
+func (r *EmployeeRepository) UpdateProfileImage(ctx context.Context, id string, filename string) error {
+	query := `UPDATE employees_data SET profile_image = $1 WHERE id = $2`
+
+	_, err := r.DB.Exec(ctx, query, filename, id)
+	return err
 }

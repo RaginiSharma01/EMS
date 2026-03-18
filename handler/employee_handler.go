@@ -3,6 +3,8 @@ package handler
 import (
 	"ems/models"
 	"ems/services"
+	"fmt"
+	"time"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -48,5 +50,40 @@ func (h *EmployeeHandler) CreateEmployee(c fiber.Ctx) error {
 
 	return c.Status(201).JSON(fiber.Map{
 		"id": id,
+	})
+}
+
+func (h *EmployeeHandler) UploadProfile(c fiber.Ctx) error {
+	id := c.Params("id")
+
+	fmt.Println("Headers:", c.GetReqHeaders())
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		fmt.Println("ERROR:", err)
+		return c.Status(400).JSON(fiber.Map{
+			"error": "File not provided",
+		})
+	}
+
+	filename := fmt.Sprintf("%d_%s", time.Now().Unix(), file.Filename)
+	path := "./uploads/" + filename
+
+	if err := c.SaveFile(file, path); err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to save file",
+		})
+	}
+
+	err = h.Service.UpdateProfileImage(c.Context(), id, filename)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "DB update failed",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"message": "File uploaded successfully",
+		"url":     "/uploads/" + filename,
 	})
 }
