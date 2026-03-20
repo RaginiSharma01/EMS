@@ -72,11 +72,6 @@ func (s *EmployeeService) CreateEmployee(
 		return "", err
 	}
 
-	// // JoiningDate should not be a future date (optional but good practice)
-	// if req.JoiningDate.After(time.Now()) {
-	// 	return "", errors.New("joining date cannot be a future date")
-	// }
-
 	// Get department ID from name
 	deptID, err := s.Repo.GetDepartmentByName(ctx, req.Department)
 	if err != nil {
