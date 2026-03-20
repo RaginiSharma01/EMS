@@ -51,3 +51,5 @@ func (h *AssetHandler) GetAllAssets(c fiber.Ctx) error {
 
 	return c.JSON(assets)
 }
+
+//

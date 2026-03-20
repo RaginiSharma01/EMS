@@ -4,6 +4,7 @@ import (
 	"context"
 	"ems/models"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -20,20 +21,20 @@ func NewEmployeeRepository(pool *pgxpool.Pool) *EmployeeRepository {
 func (r *EmployeeRepository) GetAllEmployee(ctx context.Context) ([]models.Employee, error) {
 
 	query := `
-SELECT 
-id,
-name,
-email,
-department_id, //name
-salary,
-location,
-joining_date,
-created_at,
-updated_at,
-profile_image
-FROM employees_data
-ORDER BY created_at DESC //assets , 
-`
+	SELECT 
+		id,
+		name,
+		email,
+		phone_number,
+		department_id,
+		salary,
+		location,
+		joining_date,
+		created_at,
+		updated_at
+	FROM employees_data
+	ORDER BY created_at DESC
+	`
 
 	rows, err := r.DB.Query(ctx, query)
 	if err != nil {
@@ -44,23 +45,20 @@ ORDER BY created_at DESC //assets ,
 	var employees []models.Employee
 
 	for rows.Next() {
-
 		var emp models.Employee
 
 		err := rows.Scan(
 			&emp.ID,
 			&emp.Name,
 			&emp.Email,
+			&emp.PhoneNumber,
 			&emp.DepartmentID,
 			&emp.Salary,
 			&emp.Location,
 			&emp.JoiningDate,
 			&emp.CreatedAt,
 			&emp.UpdatedAt,
-			&emp.ProfileImage,
-			&emp.ProfileImage,
 		)
-
 		if err != nil {
 			return nil, err
 		}
@@ -68,7 +66,102 @@ ORDER BY created_at DESC //assets ,
 		employees = append(employees, emp)
 	}
 
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
 	return employees, nil
+}
+
+func (r *EmployeeRepository) GetEmployeeByID(ctx context.Context, id string) (models.EmployeeDetail, error) {
+
+	// Step 1: Fetch employee + department + salary_category
+	// salary_category is computed using CASE in SQL
+	empQuery := `
+	SELECT 
+		e.id,
+		e.name,
+		e.email,
+		e.phone_number,
+		e.salary,
+		CASE
+			WHEN e.salary < 30000                    THEN 'Junior Level'
+			WHEN e.salary >= 30000 AND e.salary < 60000 THEN 'Mid Level'
+			WHEN e.salary >= 60000 AND e.salary < 100000 THEN 'Senior Level'
+			ELSE 'Executive Level'
+		END AS salary_category,
+		e.location,
+		e.joining_date,
+		d.name     AS dept_name,
+		d.location AS dept_location
+	FROM employees_data e
+	JOIN departments d ON e.department_id = d.dept_id
+	WHERE e.id = $1
+	`
+
+	var emp models.EmployeeDetail
+
+	err := r.DB.QueryRow(ctx, empQuery, id).Scan(
+		&emp.ID,
+		&emp.Name,
+		&emp.Email,
+		&emp.PhoneNumber,
+		&emp.Salary,
+		&emp.SalaryCategory,
+		&emp.Location,
+		&emp.JoiningDate,
+		&emp.Department.Name,
+		&emp.Department.Location,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return models.EmployeeDetail{}, pgx.ErrNoRows
+		}
+		return models.EmployeeDetail{}, err
+	}
+
+	// Step 2: Fetch assets assigned to this employee via emp_asset junction table
+	assetsQuery := `
+	SELECT 
+		a.asset_name,
+		a.asset_type,
+		a.asset_price
+	FROM emp_asset ea
+	JOIN assets a ON ea.asset_id = a.asset_id
+	WHERE ea.emp_id = $1
+	`
+
+	rows, err := r.DB.Query(ctx, assetsQuery, id)
+	if err != nil {
+		return models.EmployeeDetail{}, err
+	}
+	defer rows.Close()
+
+	// Initialize as empty slice so JSON returns [] not null
+	assets := []models.AssetSummary{}
+
+	for rows.Next() {
+		var asset models.AssetSummary
+
+		err := rows.Scan(
+			&asset.AssetName,
+			&asset.AssetType,
+			&asset.AssetPrice,
+		)
+		if err != nil {
+			return models.EmployeeDetail{}, err
+		}
+
+		assets = append(assets, asset)
+	}
+
+	if err := rows.Err(); err != nil {
+		return models.EmployeeDetail{}, err
+	}
+
+	emp.Assets = assets
+
+	return emp, nil
 }
 
 func (r *EmployeeRepository) CreateEmployee(
@@ -78,8 +171,8 @@ func (r *EmployeeRepository) CreateEmployee(
 
 	query := `
 	INSERT INTO employees_data
-	(name, email, department_id, salary, location, joining_date)
-	VALUES ($1,$2,$3,$4,$5,$6)
+		(name, email, phone_number, department_id, salary, location, joining_date)
+	VALUES ($1, $2, $3, $4, $5, $6, $7)
 	RETURNING id
 	`
 
@@ -90,6 +183,7 @@ func (r *EmployeeRepository) CreateEmployee(
 		query,
 		emp.Name,
 		emp.Email,
+		emp.PhoneNumber,
 		emp.DepartmentID,
 		emp.Salary,
 		emp.Location,
@@ -103,9 +197,14 @@ func (r *EmployeeRepository) CreateEmployee(
 	return id, nil
 }
 
-func (r *EmployeeRepository) UpdateProfileImage(ctx context.Context, id string, filename string) error {
-	query := `UPDATE employees_data SET profile_image = $1 WHERE id = $2`
+func (r *EmployeeRepository) GetDepartmentByName(ctx context.Context, name string) (string, error) {
+	query := `SELECT dept_id FROM departments WHERE name=$1`
 
-	_, err := r.DB.Exec(ctx, query, filename, id)
-	return err
+	var id string
+	err := r.DB.QueryRow(ctx, query, name).Scan(&id)
+	if err != nil {
+		return "", err
+	}
+
+	return id, nil
 }

@@ -47,7 +47,7 @@ func (r *DepartmentRepository) CreateDepartment(
 func (r *DepartmentRepository) GetAllDepartment(ctx context.Context) ([]models.Department, error) {
 
 	query := `
-	SELECT dept_id, name, location, created_at, updated_at
+	SELECT dept_id, name, location
 	FROM departments
 	ORDER BY created_at DESC
 	`
@@ -67,8 +67,8 @@ func (r *DepartmentRepository) GetAllDepartment(ctx context.Context) ([]models.D
 			&dept.DeptID,
 			&dept.Name,
 			&dept.Location,
-			&dept.CreatedAt,
-			&dept.UpdatedAt,
+			//&dept.CreatedAt,
+			//&dept.UpdatedAt,
 		)
 
 		if err != nil {

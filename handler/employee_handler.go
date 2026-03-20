@@ -3,8 +3,6 @@ package handler
 import (
 	"ems/models"
 	"ems/services"
-	"fmt"
-	"time"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -19,71 +17,78 @@ func NewEmployeeHandler(service *services.EmployeeService) *EmployeeHandler {
 	}
 }
 
+func (h *EmployeeHandler) CreateEmployee(c fiber.Ctx) error {
+
+	var req models.CreateEmployeeRequest
+
+	if err := c.Bind().Body(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"status":  400,
+			"message": "Invalid request body",
+			"data":    fiber.Map{},
+		})
+	}
+
+	id, err := h.Service.CreateEmployee(c.Context(), req)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"status":  400,
+			"message": err.Error(),
+			"data":    fiber.Map{},
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"status":  200,
+		"message": "Employee added successfully",
+		"data": fiber.Map{
+			"empId": id,
+		},
+	})
+}
+
 func (h *EmployeeHandler) GetAllEmployee(c fiber.Ctx) error {
 
 	employees, err := h.Service.GetAllEmployee(c.Context())
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	return c.JSON(employees)
-}
-
-func (h *EmployeeHandler) CreateEmployee(c fiber.Ctx) error {
-
-	var emp models.Employee
-
-	if err := c.Bind().Body(&emp); err != nil {
-		return c.Status(400).JSON(fiber.Map{
-			"error": "invalid request",
-		})
-	}
-
-	id, err := h.Service.CreateEmployee(c.Context(), emp)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	return c.Status(201).JSON(fiber.Map{
-		"id": id,
-	})
-}
-
-func (h *EmployeeHandler) UploadProfile(c fiber.Ctx) error {
-	id := c.Params("id")
-
-	fmt.Println("Headers:", c.GetReqHeaders())
-
-	file, err := c.FormFile("file")
-	if err != nil {
-		fmt.Println("ERROR:", err)
-		return c.Status(400).JSON(fiber.Map{
-			"error": "File not provided",
-		})
-	}
-
-	filename := fmt.Sprintf("%d_%s", time.Now().Unix(), file.Filename)
-	path := "./uploads/" + filename
-
-	if err := c.SaveFile(file, path); err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Failed to save file",
-		})
-	}
-
-	err = h.Service.UpdateProfileImage(c.Context(), id, filename)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": "DB update failed",
+			"status":  500,
+			"message": err.Error(),
+			"data":    fiber.Map{},
 		})
 	}
 
 	return c.JSON(fiber.Map{
-		"message": "File uploaded successfully",
-		"url":     "/uploads/" + filename,
+		"status":  200,
+		"message": "Employees fetched successfully",
+		"data":    employees,
+	})
+}
+
+func (h *EmployeeHandler) GetEmployeeByID(c fiber.Ctx) error {
+
+	id := c.Params("id")
+
+	emp, err := h.Service.GetEmployeeByID(c.Context(), id)
+	if err != nil {
+
+		if err.Error() == "no such user exists" {
+			return c.Status(400).JSON(fiber.Map{
+				"status":  400,
+				"message": "No such user exists",
+				"data":    fiber.Map{},
+			})
+		}
+		return c.Status(500).JSON(fiber.Map{
+			"status":  500,
+			"message": err.Error(),
+			"data":    fiber.Map{},
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"status":  200,
+		"message": "Employee details fetched successfully",
+		"data":    emp,
 	})
 }
