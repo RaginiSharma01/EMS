@@ -171,8 +171,8 @@ func (r *EmployeeRepository) CreateEmployee(
 
 	query := `
 	INSERT INTO employees_data
-		(name, email, phone_number, department_id, salary, location, joining_date)
-	VALUES ($1, $2, $3, $4, $5, $6, $7)
+		(name, email, password, phone_number, department_id, salary, location, joining_date)
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 	RETURNING id
 	`
 
@@ -183,6 +183,7 @@ func (r *EmployeeRepository) CreateEmployee(
 		query,
 		emp.Name,
 		emp.Email,
+		emp.Password,
 		emp.PhoneNumber,
 		emp.DepartmentID,
 		emp.Salary,
@@ -207,4 +208,23 @@ func (r *EmployeeRepository) GetDepartmentByName(ctx context.Context, name strin
 	}
 
 	return id, nil
+}
+
+func (r *EmployeeRepository) GetEmployeeByEmail(
+	ctx context.Context,
+	email string,
+) (models.Employee, error) {
+
+	query := `
+	SELECT id, email, password
+	FROM employees_data
+	WHERE email=$1
+	`
+
+	var emp models.Employee
+
+	err := r.DB.QueryRow(ctx, query, email).
+		Scan(&emp.ID, &emp.Email, &emp.Password)
+
+	return emp, err
 }

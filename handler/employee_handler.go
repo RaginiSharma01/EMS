@@ -92,3 +92,25 @@ func (h *EmployeeHandler) GetEmployeeByID(c fiber.Ctx) error {
 		"data":    emp,
 	})
 }
+
+func (h *EmployeeHandler) Login(c fiber.Ctx) error {
+
+	var req models.LoginRequest
+
+	if err := c.Bind().Body(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "invalid request",
+		})
+	}
+
+	err := h.Service.Login(c.Context(), req)
+	if err != nil {
+		return c.Status(401).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"message": "login successful",
+	})
+}

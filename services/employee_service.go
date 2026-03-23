@@ -3,11 +3,13 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"regexp"
 	"time"
 
 	"ems/models"
 	"ems/repository"
+	"ems/utils"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -47,6 +49,13 @@ func (s *EmployeeService) CreateEmployee(
 	req models.CreateEmployeeRequest,
 ) (string, error) {
 
+	hashedPassword, err := utils.HashPassword(req.Password)
+	if err != nil {
+		return "", err
+	}
+
+	fmt.Println("Hashed Password:", hashedPassword)
+
 	// Email validation
 	emailRegex := `^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`
 	matched, _ := regexp.MatchString(emailRegex, req.Email)
@@ -65,14 +74,14 @@ func (s *EmployeeService) CreateEmployee(
 	if req.JoiningDate == "" {
 		return "", errors.New("joining date is required")
 	}
+
 	layout := "2006-01-02"
 	parsedTime, err := time.Parse(layout, req.JoiningDate)
 	if err != nil {
-		//fmt.Println("Error:", err)
 		return "", err
 	}
 
-	// Get department ID from name
+	// Get department ID
 	deptID, err := s.Repo.GetDepartmentByName(ctx, req.Department)
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -84,6 +93,7 @@ func (s *EmployeeService) CreateEmployee(
 	emp := models.Employee{
 		Name:         req.Name,
 		Email:        req.Email,
+		Password:     hashedPassword,
 		PhoneNumber:  req.PhoneNumber,
 		DepartmentID: deptID,
 		Salary:       req.Salary,
@@ -92,4 +102,25 @@ func (s *EmployeeService) CreateEmployee(
 	}
 
 	return s.Repo.CreateEmployee(ctx, emp)
+}
+
+func (s *EmployeeService) Login(
+	ctx context.Context,
+	req models.LoginRequest,
+) error {
+
+	emp, err := s.Repo.GetEmployeeByEmail(ctx, req.Email)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return errors.New("user not found")
+		}
+		return err
+	}
+
+	err = utils.CheckPasswordHash(req.Password, emp.Password)
+	if err != nil {
+		return errors.New("invalid password")
+	}
+
+	return nil
 }

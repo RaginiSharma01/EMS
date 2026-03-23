@@ -6,6 +6,7 @@ type Employee struct {
 	ID           string    `json:"id"`
 	Name         string    `json:"name"`
 	Email        string    `json:"email"`
+	Password     string    `json:"password"`
 	PhoneNumber  string    `json:"phoneNumber"`
 	DepartmentID string    `json:"departmentId"`
 	Salary       float64   `json:"salary"`
@@ -43,9 +44,15 @@ type EmployeeDetail struct {
 type CreateEmployeeRequest struct {
 	Name        string  `json:"name"`
 	Email       string  `json:"email"`
+	Password    string  `json:"password"`
 	PhoneNumber string  `json:"phoneNumber"`
 	Department  string  `json:"department"`
 	Salary      float64 `json:"salary"`
 	Location    string  `json:"location"`
 	JoiningDate string  `json:"joiningDate"`
+}
+
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }

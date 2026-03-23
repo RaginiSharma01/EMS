@@ -16,10 +16,11 @@ func SetupEmployeeRoutes(
 
 	employee := app.Group("/employees")
 
-	employee.Post("/add-employee", employeeHandler.CreateEmployee)
+	employee.Post("/signup", employeeHandler.CreateEmployee)
 	employee.Get("/all", employeeHandler.GetAllEmployee)
 	employee.Get("/:id", employeeHandler.GetEmployeeByID)
 	app.Post("/assign-asset", assetHandler.AssignAsset)
+	app.Post("/login", employeeHandler.Login)
 
 	departments := app.Group("/departments")
 	departments.Post("/", departmentHandler.CreateDepartment)
