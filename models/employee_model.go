@@ -16,15 +16,15 @@ type Employee struct {
 }
 
 type Department struct {
-	DeptID   string `json:"dept_id,omitempty"`
+	DeptID   string `json:"deptId,omitempty"`
 	Name     string `json:"name"`
 	Location string `json:"location"`
 }
 
 type AssetSummary struct {
-	AssetName  string  `json:"asset_name"`
-	AssetType  string  `json:"asset_type"`
-	AssetPrice float64 `json:"asset_price"`
+	AssetName  string  `json:"assetName"`
+	AssetType  string  `json:"assetType"`
+	AssetPrice float64 `json:"assetPrice"`
 }
 
 type EmployeeDetail struct {
@@ -33,9 +33,9 @@ type EmployeeDetail struct {
 	Email          string         `json:"email"`
 	PhoneNumber    string         `json:"phoneNumber"`
 	Salary         float64        `json:"salary"`
-	SalaryCategory string         `json:"salary_category"`
+	SalaryCategory string         `json:"salaryCategory"`
 	Location       string         `json:"location"`
-	JoiningDate    time.Time      `json:"joining_date"`
+	JoiningDate    time.Time      `json:"joiningDate"`
 	Department     Department     `json:"department"`
 	Assets         []AssetSummary `json:"assets"`
 }
