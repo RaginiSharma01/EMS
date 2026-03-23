@@ -107,20 +107,25 @@ func (s *EmployeeService) CreateEmployee(
 func (s *EmployeeService) Login(
 	ctx context.Context,
 	req models.LoginRequest,
-) error {
+) (string, error) {
 
 	emp, err := s.Repo.GetEmployeeByEmail(ctx, req.Email)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return errors.New("user not found")
+			return "", errors.New("user not found")
 		}
-		return err
+		return "", err
 	}
 
 	err = utils.CheckPasswordHash(req.Password, emp.Password)
 	if err != nil {
-		return errors.New("invalid password")
+		return "", errors.New("invalid password")
 	}
 
-	return nil
+	token, err := utils.GenerateJWT(emp.ID, emp.Email)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }

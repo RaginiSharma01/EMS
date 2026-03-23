@@ -10,6 +10,9 @@ import (
 type EmployeeHandler struct {
 	Service *services.EmployeeService
 }
+type AuthHandler struct {
+	Service *services.EmployeeService
+}
 
 func NewEmployeeHandler(service *services.EmployeeService) *EmployeeHandler {
 	return &EmployeeHandler{
@@ -92,25 +95,33 @@ func (h *EmployeeHandler) GetEmployeeByID(c fiber.Ctx) error {
 		"data":    emp,
 	})
 }
+func NewAuthHandler(service *services.EmployeeService) *AuthHandler {
+	return &AuthHandler{
+		Service: service,
+	}
+}
 
-func (h *EmployeeHandler) Login(c fiber.Ctx) error {
+func (h *AuthHandler) Login(c fiber.Ctx) error {
 
 	var req models.LoginRequest
 
+	// parse request body
 	if err := c.Bind().Body(&req); err != nil {
 		return c.Status(400).JSON(fiber.Map{
-			"error": "invalid request",
+			"error": "invalid request body",
 		})
 	}
 
-	err := h.Service.Login(c.Context(), req)
+	// call service
+	token, err := h.Service.Login(c.Context(), req)
 	if err != nil {
 		return c.Status(401).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
 
+	// return token
 	return c.JSON(fiber.Map{
-		"message": "login successful",
+		"token": token,
 	})
 }

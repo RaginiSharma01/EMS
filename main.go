@@ -58,6 +58,7 @@ func main() {
 		departmentHandler,
 		assetHandler,
 		salaryHandler,
+		handler.NewAuthHandler(employeeService),
 	)
 	log.Fatal(app.Listen(cfg.ServerPort))
 	defer database.Pool.Close()
