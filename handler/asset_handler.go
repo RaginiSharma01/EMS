@@ -12,9 +12,7 @@ type AssetHandler struct {
 }
 
 func NewAssetHandler(service *services.AssetService) *AssetHandler {
-	return &AssetHandler{
-		Service: service,
-	}
+	return &AssetHandler{Service: service}
 }
 
 func (h *AssetHandler) CreateAsset(c fiber.Ctx) error {
@@ -24,7 +22,7 @@ func (h *AssetHandler) CreateAsset(c fiber.Ctx) error {
 	err := c.Bind().Body(&asset)
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
-			"error": "invalid request",
+			"error": "invalid request body",
 		})
 	}
 
@@ -36,7 +34,7 @@ func (h *AssetHandler) CreateAsset(c fiber.Ctx) error {
 	}
 
 	return c.Status(201).JSON(fiber.Map{
-		"id": id,
+		"assetId": id,
 	})
 }
 
@@ -50,4 +48,35 @@ func (h *AssetHandler) GetAllAssets(c fiber.Ctx) error {
 	}
 
 	return c.JSON(assets)
+}
+
+func (h *AssetHandler) AssignAssetToEmployee(c fiber.Ctx) error {
+
+	empID := c.Params("id")
+
+	var asset models.Asset
+
+	err := c.Bind().Body(&asset)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "invalid request",
+		})
+	}
+
+	assetID, err := h.Service.CreateAndAssignAsset(
+		c.Context(),
+		empID,
+		asset,
+	)
+
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.Status(201).JSON(fiber.Map{
+		"message": "asset assigned successfully",
+		"assetId": assetID,
+	})
 }

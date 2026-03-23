@@ -3,11 +3,12 @@ package models
 import "time"
 
 type Asset struct {
-	AssetID    string    `json:"asset_id"`
-	AssetName  string    `json:"asset_name"`
-	AssetType  string    `json:"asset_type"`
-	AssetPrice float64   `json:"asset_price"`
-	DeptID     string    `json:"dept_id"`
-	CreatedAt  time.Time `json:"created_at,omitempty"`
-	UpdatedAt  time.Time `json:"updated_at,omitempty"`
+	AssetID        string    `json:"assetId,omitempty"`
+	AssetName      string    `json:"assetName"`
+	AssetType      string    `json:"assetType"`
+	AssetPrice     float64   `json:"assetPrice"`
+	DeptID         string    `json:"deptId,omitempty"`
+	DepartmentName string    `json:"departmentName,omitempty"`
+	CreatedAt      time.Time `json:"createdAt,omitempty"`
+	UpdatedAt      time.Time `json:"updatedAt,omitempty"`
 }

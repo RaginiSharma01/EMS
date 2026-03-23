@@ -19,15 +19,16 @@ func SetupEmployeeRoutes(
 	employee.Post("/add-employee", employeeHandler.CreateEmployee)
 	employee.Get("/all", employeeHandler.GetAllEmployee)
 	employee.Get("/:id", employeeHandler.GetEmployeeByID)
+	employee.Post("/:id/assets", assetHandler.AssignAssetToEmployee)
 
 	departments := app.Group("/departments")
 	departments.Post("/", departmentHandler.CreateDepartment)
 	departments.Get("/all", departmentHandler.GetAllDepartment)
 
 	assets := app.Group("/assets")
+
 	assets.Post("/", assetHandler.CreateAsset)
 	assets.Get("/all", assetHandler.GetAllAssets)
-
 	salary := app.Group("/salary-category")
 	salary.Post("/", salaryCategoryHandler.CreateCategory)
 	salary.Get("/all", salaryCategoryHandler.GetAllCategory)
