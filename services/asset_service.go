@@ -38,32 +38,11 @@ func (s *AssetService) GetAllAssets(ctx context.Context) ([]models.Asset, error)
 	return s.Repo.GetAllAssets(ctx)
 }
 
-func (s *AssetService) CreateAndAssignAsset(
+func (s *AssetService) AssignAssetToEmployee(
 	ctx context.Context,
 	empID string,
-	asset models.Asset,
-) (string, error) {
+	assetID string,
+) error {
 
-	deptID, err := s.Repo.GetDepartmentIDByName(
-		ctx,
-		asset.DepartmentName,
-	)
-
-	if err != nil {
-		return "", err
-	}
-
-	asset.DeptID = deptID
-
-	assetID, err := s.Repo.CreateAsset(ctx, asset)
-	if err != nil {
-		return "", err
-	}
-
-	err = s.Repo.AssignAssetToEmployee(ctx, empID, assetID)
-	if err != nil {
-		return "", err
-	}
-
-	return assetID, nil
+	return s.Repo.AssignAssetToEmployee(ctx, empID, assetID)
 }
