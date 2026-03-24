@@ -2,6 +2,7 @@ package route
 
 import (
 	"ems/handler"
+	"ems/middleware"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -20,18 +21,22 @@ func SetupEmployeeRoutes(
 	employee.Post("/signup", employeeHandler.CreateEmployee)
 	employee.Get("/all", employeeHandler.GetAllEmployee)
 	employee.Get("/:id", employeeHandler.GetEmployeeByID)
-	app.Post("/assign-asset", assetHandler.AssignAsset)
-	app.Post("/login", authHandler.Login)
+	employee.Post("/assign-asset", assetHandler.AssignAsset)
+	employee.Post("/login", authHandler.Login)
 
+	// logout
+	app.Post("/logout",
+		middleware.AuthMiddleware,
+		authHandler.Logout,
+	)
+
+	// departments
 	departments := app.Group("/departments")
 	departments.Post("/", departmentHandler.CreateDepartment)
 	departments.Get("/all", departmentHandler.GetAllDepartment)
 
+	// assets
 	assets := app.Group("/assets")
-
 	assets.Post("/create", assetHandler.CreateAsset)
 	assets.Get("/all", assetHandler.GetAllAssets)
-	salary := app.Group("/salary-category")
-	salary.Post("/", salaryCategoryHandler.CreateCategory)
-	salary.Get("/all", salaryCategoryHandler.GetAllCategory)
 }

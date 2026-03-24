@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"time"
 
+	"ems/config"
 	"ems/models"
 	"ems/repository"
 	"ems/utils"
@@ -128,4 +129,20 @@ func (s *EmployeeService) Login(
 	}
 
 	return token, nil
+}
+
+func (s *EmployeeService) Logout(ctx context.Context, token string) error {
+	if token == "" {
+		return errors.New("token missing")
+	}
+
+	err := config.RedisClient.Set(
+		ctx, token, "blacklisted", time.Hour*24,
+	).Err()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

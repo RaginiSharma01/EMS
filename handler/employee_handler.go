@@ -3,6 +3,7 @@ package handler
 import (
 	"ems/models"
 	"ems/services"
+	"strings"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -123,5 +124,29 @@ func (h *AuthHandler) Login(c fiber.Ctx) error {
 	// return token
 	return c.JSON(fiber.Map{
 		"token": token,
+	})
+}
+func (h *AuthHandler) Logout(c fiber.Ctx) error {
+
+	authHeader := c.Get("Authorization")
+
+	if authHeader == "" {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "token missing",
+		})
+	}
+
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+
+	err := h.Service.Logout(c.Context(), token)
+
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"message": "logout successful",
 	})
 }
