@@ -16,19 +16,19 @@ func SetupEmployeeRoutes(
 	authHandler *handler.AuthHandler,
 ) {
 
-	employee := app.Group("/employees")
-
-	employee.Post("/signup", employeeHandler.CreateEmployee)
-	employee.Get("/all", employeeHandler.GetAllEmployee)
-	employee.Get("/:id", employeeHandler.GetEmployeeByID)
-	employee.Post("/assign-asset", assetHandler.AssignAsset)
-	employee.Post("/login", authHandler.Login)
-
-	// logout
+	//signUp
+	app.Post("/signup", employeeHandler.CreateEmployee)
+	//login
+	app.Post("/login", authHandler.Login)
+	//logout
 	app.Post("/logout",
 		middleware.AuthMiddleware,
 		authHandler.Logout,
 	)
+	employee := app.Group("/employees")
+	employee.Get("/all", employeeHandler.GetAllEmployee)
+	employee.Get("/:id", employeeHandler.GetEmployeeByID)
+	employee.Post("/assign-asset", assetHandler.AssignAsset)
 
 	// departments
 	departments := app.Group("/departments")
