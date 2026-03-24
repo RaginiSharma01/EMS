@@ -143,7 +143,7 @@ func (h *AuthHandler) Logout(c fiber.Ctx) error {
 		})
 	}
 
-	token := strings.TrimPrefix(authHeader, "Bearer ")
+	token := strings.TrimPrefix(authHeader, "Bearer")
 
 	err := h.Service.Logout(c.Context(), token)
 

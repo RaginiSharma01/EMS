@@ -19,6 +19,8 @@ func main() {
 	godotenv.Load()
 
 	cfg := config.LoadConfig()
+	//declaring in main
+	config.ConnectRedis()
 
 	database, err := db.ConnectDb(cfg)
 	if err != nil {

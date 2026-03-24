@@ -22,7 +22,9 @@ func SetupEmployeeRoutes(
 	//login ---> public route
 	app.Post("/login", authHandler.Login)
 
+	//for middleware
 	employee.Use(middleware.AuthMiddleware)
+
 	employee.Get("/all", employeeHandler.GetAllEmployee)
 	employee.Get("/:id", employeeHandler.GetEmployeeByID)
 	employee.Post("/assign-asset", assetHandler.AssignAsset)
