@@ -2,7 +2,6 @@ package config
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -17,16 +16,16 @@ func ConnectRedis() {
 		Addr: "localhost:6379",
 	})
 
-	// Test connection
-	err := RedisClient.Set(Ctx, "foo", "bar", 0).Err()
-	if err != nil {
-		panic(err)
-	}
+	// Test-connection
+	// 	err := RedisClient.Set(Ctx, "foo", "bar", 0).Err()
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
 
-	val, err := RedisClient.Get(Ctx, "foo").Result()
-	if err != nil {
-		panic(err)
-	}
+	// 	val, err := RedisClient.Get(Ctx, "foo").Result()
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
 
-	fmt.Println("Redis test value:", val)
+	// 	fmt.Println("Redis test value:", val)
 }
