@@ -3,6 +3,7 @@ package handler
 import (
 	"ems/models"
 	"ems/services"
+	"strconv"
 	"strings"
 
 	"github.com/gofiber/fiber/v3"
@@ -53,19 +54,25 @@ func (h *EmployeeHandler) CreateEmployee(c fiber.Ctx) error {
 
 func (h *EmployeeHandler) GetAllEmployee(c fiber.Ctx) error {
 
-	employees, err := h.Service.GetAllEmployee(c.Context())
+	pageStr := c.Query("page", "1")
+	limitStr := c.Query("limit", "10")
+
+	page, _ := strconv.Atoi(pageStr)
+	limit, _ := strconv.Atoi(limitStr)
+
+	offset := (page - 1) * limit
+
+	employees, err := h.Service.GetAllEmployee(c.Context(), limit, offset)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
-			"status":  500,
 			"message": err.Error(),
-			"data":    fiber.Map{},
 		})
 	}
 
 	return c.JSON(fiber.Map{
-		"status":  200,
-		"message": "Employees fetched successfully",
-		"data":    employees,
+		"page":  page,
+		"limit": limit,
+		"data":  employees,
 	})
 }
 

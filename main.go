@@ -11,9 +11,12 @@ import (
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/static"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+
+	godotenv.Load()
 
 	cfg := config.LoadConfig()
 
@@ -21,6 +24,8 @@ func main() {
 	if err != nil {
 		log.Fatal("Database connection failed", err)
 	}
+
+	defer database.Pool.Close()
 
 	app := fiber.New(fiber.Config{
 		BodyLimit:         20 * 1024 * 1024,
@@ -30,24 +35,25 @@ func main() {
 	app.Get("/health", func(c fiber.Ctx) error {
 		return c.SendString("server running")
 	})
+
 	app.Use("/uploads", static.New("./uploads"))
 
-	// emp
+	// employee
 	employeeRepo := repository.NewEmployeeRepository(database.Pool)
 	employeeService := services.NewEmployeeService(employeeRepo)
 	employeeHandler := handler.NewEmployeeHandler(employeeService)
 
-	//dpt
+	// department
 	departmentRepo := repository.NewDepartment(database.Pool)
 	departmentService := services.NewDepartmentService(departmentRepo)
 	departmentHandler := handler.NewDepartmentHandler(departmentService)
 
-	//asset
+	// asset
 	assetRepo := repository.NewAssetRepository(database.Pool)
 	assetService := services.NewAssetService(assetRepo)
 	assetHandler := handler.NewAssetHandler(assetService)
 
-	//salary category
+	// salary
 	salaryRepo := repository.NewSalaryCategoryRepository(database.Pool)
 	salaryService := services.NewSalaryCategoryService(salaryRepo)
 	salaryHandler := handler.NewSalaryCategoryHandler(salaryService)
@@ -60,6 +66,6 @@ func main() {
 		salaryHandler,
 		handler.NewAuthHandler(employeeService),
 	)
+
 	log.Fatal(app.Listen(cfg.ServerPort))
-	defer database.Pool.Close()
 }

@@ -25,8 +25,8 @@ func NewEmployeeService(repo *repository.EmployeeRepository) *EmployeeService {
 	}
 }
 
-func (s *EmployeeService) GetAllEmployee(ctx context.Context) ([]models.Employee, error) {
-	return s.Repo.GetAllEmployee(ctx)
+func (s *EmployeeService) GetAllEmployee(ctx context.Context, limit int, offset int) ([]models.Employee, error) {
+	return s.Repo.GetAllEmployee(ctx, limit, offset)
 }
 
 func (s *EmployeeService) GetEmployeeByID(ctx context.Context, id string) (models.EmployeeDetail, error) {

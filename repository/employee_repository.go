@@ -18,7 +18,7 @@ func NewEmployeeRepository(pool *pgxpool.Pool) *EmployeeRepository {
 	}
 }
 
-func (r *EmployeeRepository) GetAllEmployee(ctx context.Context) ([]models.Employee, error) {
+func (r *EmployeeRepository) GetAllEmployee(ctx context.Context, limit int, offset int) ([]models.Employee, error) {
 
 	query := `
 	SELECT 
@@ -33,10 +33,10 @@ func (r *EmployeeRepository) GetAllEmployee(ctx context.Context) ([]models.Emplo
 		created_at,
 		updated_at
 	FROM employees_data
-	ORDER BY created_at DESC
+	LIMIT $1 OFFSET $2
 	`
 
-	rows, err := r.DB.Query(ctx, query)
+	rows, err := r.DB.Query(ctx, query, limit, offset)
 	if err != nil {
 		return nil, err
 	}
