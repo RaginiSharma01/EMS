@@ -18,13 +18,13 @@ func SetupEmployeeRoutes(
 	//public routes
 	app.Post("/signup", employeeHandler.CreateEmployee)
 	app.Post("/login", authHandler.Login)
+	app.Get("/all", employeeHandler.GetAllEmployee)
 
 	//for middleware
 	auth := app.Group("/employees", middleware.AuthMiddleware)
 
 	auth.Post("/assets", assetHandler.CreateAsset)
 	auth.Post("/assign-asset", assetHandler.AssignAsset)
-	auth.Get("/all", employeeHandler.GetAllEmployee)
 	auth.Get("/:id", employeeHandler.GetEmployeeByID)
 	//logout
 	auth.Post("/logout", middleware.AuthMiddleware, authHandler.Logout)

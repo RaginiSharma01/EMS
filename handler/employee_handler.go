@@ -27,8 +27,7 @@ func (h *EmployeeHandler) CreateEmployee(c fiber.Ctx) error {
 	var req models.CreateEmployeeRequest
 
 	if err := c.Bind().Body(&req); err != nil {
-		return c.Status(400).JSON(fiber.Map{
-			"status":  400,
+		return c.Status(200).JSON(fiber.Map{
 			"message": "Invalid request body",
 			"data":    fiber.Map{},
 		})
@@ -36,15 +35,13 @@ func (h *EmployeeHandler) CreateEmployee(c fiber.Ctx) error {
 
 	id, err := h.Service.CreateEmployee(c.Context(), req)
 	if err != nil {
-		return c.Status(400).JSON(fiber.Map{
-			"status":  400,
+		return c.Status(200).JSON(fiber.Map{
 			"message": err.Error(),
 			"data":    fiber.Map{},
 		})
 	}
 
 	return c.JSON(fiber.Map{
-		"status":  200,
 		"message": "Employee added successfully",
 		"data": fiber.Map{
 			"empId": id,
@@ -78,27 +75,37 @@ func (h *EmployeeHandler) GetAllEmployee(c fiber.Ctx) error {
 
 func (h *EmployeeHandler) GetEmployeeByID(c fiber.Ctx) error {
 
-	id := c.Params("id")
+	requestedID := c.Params("id")
+	tokenEmpID := c.Locals("empId").(string)
 
-	emp, err := h.Service.GetEmployeeByID(c.Context(), id)
+	// prevent access to other employees
+	if requestedID != tokenEmpID {
+		return c.Status(200).JSON(fiber.Map{
+			
+			"message": "you cannot access other employee data",
+			// "data":fiber.Map{}
+		})
+	}
+
+	emp, err := h.Service.GetEmployeeByID(c.Context(), requestedID)
 	if err != nil {
 
 		if err.Error() == "no such user exists" {
-			return c.Status(400).JSON(fiber.Map{
-				"status":  400,
+			return c.Status(500).JSON(fiber.Map{
+
 				"message": "No such user exists",
 				"data":    fiber.Map{},
 			})
 		}
-		return c.Status(500).JSON(fiber.Map{
-			"status":  500,
+
+		return c.Status(200).JSON(fiber.Map{
+
 			"message": err.Error(),
 			"data":    fiber.Map{},
 		})
 	}
 
 	return c.JSON(fiber.Map{
-		"status":  200,
 		"message": "Employee details fetched successfully",
 		"data":    emp,
 	})
@@ -138,7 +145,7 @@ func (h *AuthHandler) Logout(c fiber.Ctx) error {
 	authHeader := c.Get("Authorization")
 
 	if authHeader == "" {
-		return c.Status(400).JSON(fiber.Map{
+		return c.Status(200).JSON(fiber.Map{
 			"message": "token missing",
 		})
 	}

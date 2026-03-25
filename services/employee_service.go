@@ -14,6 +14,7 @@ import (
 	"ems/utils"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/redis/go-redis/v9"
 )
 
 type EmployeeService struct {
@@ -105,34 +106,14 @@ func (s *EmployeeService) CreateEmployee(
 
 	return s.Repo.CreateEmployee(ctx, emp)
 }
-
 func (s *EmployeeService) Login(
 	ctx context.Context,
 	req models.LoginRequest,
 ) (string, error) {
 
-	// emp, err := s.Repo.GetEmployeeByEmail(ctx, req.Email)
-	// if err != nil {
-	// 	if err == pgx.ErrNoRows {
-	// 		return "", errors.New("user not found")
-	// 	}
-	// 	return "", err
-	// }
-
-	// err = utils.CheckPasswordHash(req.Password, emp.Password)
-	// if err != nil {
-	// 	return "", errors.New("invalid password")
-	// }
-
-	// token, err := utils.GenerateJWT(emp.ID, emp.Email)
-	// if err != nil {
-	// 	return "", err
-	// }
-
-	key := "Employee:email:" + req.Email
+	key := "employee:email:" + req.Email
 	var emp models.Employee
 
-	//check the redis
 	val, err := config.RedisClient.Get(ctx, key).Result()
 
 	if err == nil {
@@ -143,29 +124,32 @@ func (s *EmployeeService) Login(
 			return "", err
 		}
 
-	} else {
+	} else if err == redis.Nil {
 
 		// Redis MISS → check DB
 		emp, err = s.Repo.GetEmployeeByEmail(ctx, req.Email)
-
 		if err != nil {
 			if err == pgx.ErrNoRows {
-				return "", errors.New("user not found")
+				return "", errors.New("Not a registered email please signup!")
 			}
 			return "", err
 		}
 
-		// Store user in Redis
+		// store in Redis
 		userJSON, err := json.Marshal(emp)
 		if err == nil {
+			//runs the func in seperate light weight treAD
 			go config.RedisClient.Set(ctx, key, userJSON, time.Hour*24)
 		}
+
+	} else {
+		return "", err
 	}
 
 	// Verify password
 	err = utils.CheckPasswordHash(req.Password, emp.Password)
 	if err != nil {
-		return "", errors.New("invalid password")
+		return "", errors.New("Enter the password again")
 	}
 
 	// Generate JWT
