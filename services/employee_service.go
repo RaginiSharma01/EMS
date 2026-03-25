@@ -182,11 +182,11 @@ func (s *EmployeeService) GeneratePdf(employees []models.Employee) (*fpdf.Fpdf, 
 	// Title
 	pdf.SetFont("Arial", "B", 18)
 	pdf.SetTextColor(33, 97, 140)
-	pdf.Cell(0, 12, "Employee List")
+	pdf.Cell(0, 12, "List of the Employees")
 	pdf.Ln(16)
 
 	headers := []string{"Sl.No", "Name", "Email", "Phone", "Department", "Salary", "Location", "Joining Date"}
-	widths := []float64{15, 29, 30, 40, 70, 30, 35, 35}
+	widths := []float64{15, 29, 30, 30, 70, 30, 35, 35}
 
 	// Table header
 	pdf.SetFont("Arial", "B", 10)
@@ -214,7 +214,7 @@ func (s *EmployeeService) GeneratePdf(employees []models.Employee) (*fpdf.Fpdf, 
 		pdf.CellFormat(widths[4], 8, emp.DepartmentID, "1", 0, "L", true, 0, "")
 		pdf.CellFormat(widths[5], 8, fmt.Sprintf("Rs-%.2f", emp.Salary), "1", 0, "R", true, 0, "")
 		pdf.CellFormat(widths[6], 8, emp.Location, "1", 0, "L", true, 0, "")
-		pdf.CellFormat(widths[7], 8, emp.JoiningDate.Format("02-Jan-2006"), "1", 1, "C", true, 0, "")
+		pdf.CellFormat(widths[7], 8, emp.JoiningDate.Format("02-Jan-2026"), "1", 1, "C", true, 0, "")
 	}
 
 	// Footer
