@@ -22,12 +22,15 @@ func AuthMiddleware(c fiber.Ctx) error {
 	token := strings.TrimPrefix(authHeader, "Bearer ")
 
 	// Verify JWT
-	_, err := utils.VerifyJWT(token)
+	claims, err := utils.VerifyJWT(token)
 	if err != nil {
 		return c.Status(401).JSON(fiber.Map{
 			"message": "invalid token",
 		})
 	}
+
+	c.Locals("empId", claims["empId"])
+	c.Locals("email", claims["email"])
 
 	// Check Redis blacklist
 	val, err := config.RedisClient.Get(config.Ctx, token).Result()

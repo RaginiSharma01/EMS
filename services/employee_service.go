@@ -136,13 +136,11 @@ func (s *EmployeeService) Logout(ctx context.Context, token string) error {
 		return errors.New("token missing")
 	}
 
-	err := config.RedisClient.Set(
-		ctx, token, "blacklisted", time.Hour*24,
-	).Err()
+	//redis client
+	err := config.RedisClient.Set(ctx, token, "blacklisted", time.Hour*24).Err()
 
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
