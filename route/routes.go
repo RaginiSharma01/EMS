@@ -15,18 +15,17 @@ func SetupEmployeeRoutes(
 	salaryCategoryHandler *handler.SalaryCategoryHandler,
 	authHandler *handler.AuthHandler,
 ) {
-	//public routes
+	// public routes
 	app.Post("/signup", employeeHandler.CreateEmployee)
 	app.Post("/login", authHandler.Login)
 	app.Get("/all", employeeHandler.GetAllEmployee)
+	app.Get("/pdf", employeeHandler.DownloadEmployeePDF)
 
-	//for middleware
+	// for middleware
 	auth := app.Group("/employees", middleware.AuthMiddleware)
-
 	auth.Post("/assets", assetHandler.CreateAsset)
 	auth.Post("/assign-asset", assetHandler.AssignAsset)
 	auth.Get("/:id", employeeHandler.GetEmployeeByID)
-	//logout
 	auth.Post("/logout", middleware.AuthMiddleware, authHandler.Logout)
 
 	// departments

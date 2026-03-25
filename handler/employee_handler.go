@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"ems/models"
 	"ems/services"
 	"strconv"
@@ -81,7 +82,7 @@ func (h *EmployeeHandler) GetEmployeeByID(c fiber.Ctx) error {
 	// prevent access to other employees
 	if requestedID != tokenEmpID {
 		return c.Status(200).JSON(fiber.Map{
-			
+
 			"message": "you cannot access other employee data",
 			// "data":fiber.Map{}
 		})
@@ -163,4 +164,37 @@ func (h *AuthHandler) Logout(c fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"message": "logout successful",
 	})
+}
+
+func (h *EmployeeHandler) DownloadEmployeePDF(c fiber.Ctx) error {
+
+	// 1. Fetch employees
+	employees, err := h.Service.GetAllEmployee(c.Context(), 1000, 0)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to fetch employees",
+		})
+	}
+
+	// 2. Generate PDF
+	pdf, err := h.Service.GeneratePdf(employees)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to generate PDF",
+		})
+	}
+
+	// 3. Write PDF into a buffer
+	var buf bytes.Buffer
+	err = pdf.Output(&buf)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to write PDF",
+		})
+	}
+
+	// 4. Stream buffer to response
+	c.Set("Content-Type", "application/pdf")
+	c.Set("Content-Disposition", "attachment; filename=employees.pdf")
+	return c.Send(buf.Bytes())
 }
