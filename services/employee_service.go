@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"regexp"
@@ -110,19 +111,64 @@ func (s *EmployeeService) Login(
 	req models.LoginRequest,
 ) (string, error) {
 
-	emp, err := s.Repo.GetEmployeeByEmail(ctx, req.Email)
-	if err != nil {
-		if err == pgx.ErrNoRows {
-			return "", errors.New("user not found")
+	// emp, err := s.Repo.GetEmployeeByEmail(ctx, req.Email)
+	// if err != nil {
+	// 	if err == pgx.ErrNoRows {
+	// 		return "", errors.New("user not found")
+	// 	}
+	// 	return "", err
+	// }
+
+	// err = utils.CheckPasswordHash(req.Password, emp.Password)
+	// if err != nil {
+	// 	return "", errors.New("invalid password")
+	// }
+
+	// token, err := utils.GenerateJWT(emp.ID, emp.Email)
+	// if err != nil {
+	// 	return "", err
+	// }
+
+	key := "Employee:email:" + req.Email
+	var emp models.Employee
+
+	//check the redis
+	val, err := config.RedisClient.Get(ctx, key).Result()
+
+	if err == nil {
+
+		// Redis HIT
+		err := json.Unmarshal([]byte(val), &emp)
+		if err != nil {
+			return "", err
 		}
-		return "", err
+
+	} else {
+
+		// Redis MISS → check DB
+		emp, err = s.Repo.GetEmployeeByEmail(ctx, req.Email)
+
+		if err != nil {
+			if err == pgx.ErrNoRows {
+				return "", errors.New("user not found")
+			}
+			return "", err
+		}
+
+		// Store user in Redis
+		userJSON, err := json.Marshal(emp)
+		if err == nil {
+			go config.RedisClient.Set(ctx, key, userJSON, time.Hour*24)
+		}
 	}
 
+	// Verify password
 	err = utils.CheckPasswordHash(req.Password, emp.Password)
 	if err != nil {
 		return "", errors.New("invalid password")
 	}
 
+	// Generate JWT
 	token, err := utils.GenerateJWT(emp.ID, emp.Email)
 	if err != nil {
 		return "", err

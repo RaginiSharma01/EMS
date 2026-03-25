@@ -33,6 +33,7 @@ func AuthMiddleware(c fiber.Ctx) error {
 	c.Locals("email", claims["email"])
 
 	// Check Redis blacklist
+
 	val, err := config.RedisClient.Get(config.Ctx, token).Result()
 	if err == nil && val == "blacklisted" {
 		return c.Status(401).JSON(fiber.Map{
