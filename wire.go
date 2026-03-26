@@ -1,8 +1,7 @@
-//go:build wireinject
+wireinject
 // +build wireinject
 
-package main
-
+package p
 import (
 	"ems/handler"
 	"ems/repository"
