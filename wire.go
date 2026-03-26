@@ -1,7 +1,7 @@
 wireinject
 // +build wireinject
 
-package p
+
 import (
 	"ems/handler"
 	"ems/repository"
