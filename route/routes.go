@@ -20,6 +20,7 @@ func SetupEmployeeRoutes(
 	app.Post("/login", authHandler.Login)
 	app.Get("/all", employeeHandler.GetAllEmployee)
 	app.Get("/pdf", employeeHandler.DownloadEmployeePDF)
+	app.Get("/verify", employeeHandler.VerifyEmail)
 
 	// for middleware
 	auth := app.Group("/employees", middleware.AuthMiddleware)

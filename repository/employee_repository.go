@@ -223,8 +223,22 @@ func (r *EmployeeRepository) GetEmployeeByEmail(
 
 	var emp models.Employee
 
-	err := r.DB.QueryRow(ctx, query, email).
-		Scan(&emp.ID, &emp.Email, &emp.Password)
+	err := r.DB.QueryRow(ctx, query, email).Scan(&emp.ID, &emp.Email, &emp.Password)
 
 	return emp, err
+}
+
+func (r *EmployeeRepository) MarkEmailVerified(
+	ctx context.Context,
+	email string,
+) error {
+
+	query := `
+	UPDATE employees_data
+	SET email_verified = true
+	WHERE email = $1
+	`
+
+	_, err := r.DB.Exec(ctx, query, email)
+	return err
 }

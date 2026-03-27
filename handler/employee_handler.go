@@ -198,3 +198,15 @@ func (h *EmployeeHandler) DownloadEmployeePDF(c fiber.Ctx) error {
 	c.Set("Content-Disposition", "attachment; filename=employees.pdf")
 	return c.Send(buf.Bytes())
 }
+
+func (h *EmployeeHandler) VerifyEmail(c fiber.Ctx) error {
+
+	token := c.Query("token")
+
+	err := h.Service.EmailVerification(c.Context(), token)
+	if err != nil {
+		return c.Status(400).SendString(err.Error())
+	}
+
+	return c.SendString("Email verified successfully")
+}

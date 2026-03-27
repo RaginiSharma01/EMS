@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"os"
 	"time"
@@ -50,4 +52,15 @@ func VerifyJWT(tokenString string) (jwt.MapClaims, error) {
 	}
 
 	return claims, nil
+}
+
+func GenerateVerificationToken() (string, error) {
+	b := make([]byte, 16)
+
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(b), nil
 }

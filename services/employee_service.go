@@ -51,12 +51,11 @@ func (s *EmployeeService) CreateEmployee(
 	req models.CreateEmployeeRequest,
 ) (string, error) {
 
+	// Hash password
 	hashedPassword, err := utils.HashPassword(req.Password)
 	if err != nil {
 		return "", err
 	}
-
-	fmt.Println("Hashed Password:", hashedPassword)
 
 	// Email validation
 	emailRegex := `^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`
@@ -72,7 +71,7 @@ func (s *EmployeeService) CreateEmployee(
 		return "", errors.New("incorrect phone number format")
 	}
 
-	// JoiningDate validation
+	// Joining date validation
 	if req.JoiningDate == "" {
 		return "", errors.New("joining date is required")
 	}
@@ -92,6 +91,7 @@ func (s *EmployeeService) CreateEmployee(
 		return "", err
 	}
 
+	// Create employee model
 	emp := models.Employee{
 		Name:         req.Name,
 		Email:        req.Email,
@@ -103,7 +103,39 @@ func (s *EmployeeService) CreateEmployee(
 		JoiningDate:  parsedTime,
 	}
 
-	return s.Repo.CreateEmployee(ctx, emp)
+	// Save employee to DB
+	id, err := s.Repo.CreateEmployee(ctx, emp)
+	if err != nil {
+		return "", err
+	}
+
+	// Generate verification token
+	token, err := utils.GenerateVerificationToken()
+	if err != nil {
+		return "", err
+	}
+
+	// Store token in Redis
+	key := "verify:" + token
+
+	err = config.RedisClient.Set(ctx, key, req.Email, time.Minute*10).Err()
+	if err != nil {
+		return "", err
+	}
+
+	// Generate verification link
+	verificationLink := fmt.Sprintf(
+		"http://localhost:9000/verify?token=%s",
+		token,
+	)
+
+	// For now print link (later send email)
+	fmt.Println("Verification link:", verificationLink)
+
+	// TODO: Send email here
+	// utils.SendEmail(req.Email, verificationLink)
+
+	return id, nil
 }
 func (s *EmployeeService) Login(
 	ctx context.Context,
@@ -224,4 +256,31 @@ func (s *EmployeeService) GeneratePdf(employees []models.Employee) (*fpdf.Fpdf, 
 	pdf.Cell(0, 8, fmt.Sprintf("Total Employees: %d", len(employees)))
 
 	return pdf, nil
+}
+
+func (s *EmployeeService) EmailVerification(
+	ctx context.Context,
+	token string,
+) error {
+
+	key := "verify:" + token
+
+	email, err := config.RedisClient.Get(ctx, key).Result()
+	if err != nil {
+		if err == redis.Nil {
+			return errors.New("verification token expired or invalid")
+		}
+		return err
+	}
+
+	// mark user verified in DB
+	err = s.Repo.MarkEmailVerified(ctx, email)
+	if err != nil {
+		return err
+	}
+
+	// delete token from redis
+	config.RedisClient.Del(ctx, key)
+
+	return nil
 }
