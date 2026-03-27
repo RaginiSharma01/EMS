@@ -115,9 +115,8 @@ func (s *EmployeeService) CreateEmployee(
 		return "", err
 	}
 
-	// Store token in Redis
+	// Store token in Redis with 10 min TTL
 	key := "verify:" + token
-
 	err = config.RedisClient.Set(ctx, key, req.Email, time.Minute*10).Err()
 	if err != nil {
 		return "", err
@@ -129,14 +128,21 @@ func (s *EmployeeService) CreateEmployee(
 		token,
 	)
 
-	// For now print link (later send email)
-	fmt.Println("Verification link:", verificationLink)
-
-	// TODO: Send email here
-	// utils.SendEmail(req.Email, verificationLink)
+	// Send verification email via SMTP
+	err = utils.SendVerificationEmail(
+		req.Email,
+		verificationLink,
+		config.SMTPEmail,
+		config.SMTPPassword,
+	)
+	if err != nil {
+		// don't fail registration if email fails — just log it
+		fmt.Println("Warning: failed to send verification email:", err)
+	}
 
 	return id, nil
 }
+
 func (s *EmployeeService) Login(
 	ctx context.Context,
 	req models.LoginRequest,

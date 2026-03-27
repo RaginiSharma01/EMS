@@ -8,12 +8,15 @@ import (
 )
 
 type ConfigStruct struct {
-	DBIP       string
-	DBPort     string
-	DBUser     string
-	DBPassword string
-	DBName     string
-	ServerPort string
+	DBIP         string
+	DBPort       string
+	DBUser       string
+	DBPassword   string
+	DBName       string
+	ServerPort   string
+	RedisAddr    string
+	SMTPEmail    string
+	SMTPPassword string
 }
 
 func LoadConfig() *ConfigStruct {
@@ -24,11 +27,14 @@ func LoadConfig() *ConfigStruct {
 	}
 
 	return &ConfigStruct{
-		DBIP:       os.Getenv("DB_IP"),
-		DBPort:     os.Getenv("DB_PORT"),
-		DBUser:     os.Getenv("DB_USER"),
-		DBPassword: os.Getenv("DB_PASSWORD"),
-		DBName:     os.Getenv("DB_NAME"),
-		ServerPort: os.Getenv("SERVER_PORT"),
+		DBIP:         os.Getenv("DB_IP"),
+		DBPort:       os.Getenv("DB_PORT"),
+		DBUser:       os.Getenv("DB_USER"),
+		DBPassword:   os.Getenv("DB_PASSWORD"),
+		DBName:       os.Getenv("DB_NAME"),
+		ServerPort:   os.Getenv("SERVER_PORT"),
+		RedisAddr:    os.Getenv("REDIS_ADDR"),
+		SMTPEmail:    os.Getenv("SMTP_EMAIL"),
+		SMTPPassword: os.Getenv("SMTP_PASSWORD"),
 	}
 }
