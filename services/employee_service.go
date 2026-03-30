@@ -122,7 +122,8 @@ func (s *EmployeeService) CreateEmployee(
 
 	// Send OTP email
 	err = utils.SendOTPEmail(req.Email, otp)
-	fmt.Println("OTP generated")
+
+	// fmt.Println("OTP generated")
 	//fmt.Println("Sending email to:", req.Email)
 	if err != nil {
 		fmt.Println("EMAIL ERROR:", err)
@@ -134,10 +135,7 @@ func (s *EmployeeService) CreateEmployee(
 	return id, nil
 }
 
-func (s *EmployeeService) Login(
-	ctx context.Context,
-	req models.LoginRequest,
-) (string, error) {
+func (s *EmployeeService) Login(ctx context.Context, req models.LoginRequest) (string, error) {
 
 	key := "employee:email:" + req.Email
 	var emp models.Employee
@@ -256,10 +254,7 @@ func (s *EmployeeService) GeneratePdf(employees []models.Employee) (*fpdf.Fpdf, 
 	return pdf, nil
 }
 
-func (s *EmployeeService) EmailVerification(
-	ctx context.Context,
-	token string,
-) error {
+func (s *EmployeeService) EmailVerification(ctx context.Context, token string) error {
 
 	key := "verify:" + token
 
@@ -282,11 +277,7 @@ func (s *EmployeeService) EmailVerification(
 	return nil
 }
 
-func (s *EmployeeService) VerifyOTP(
-	ctx context.Context,
-	email string,
-	userOTP string,
-) error {
+func (s *EmployeeService) VerifyOTP(ctx context.Context, email string, userOTP string) error {
 
 	key := "otp:" + email
 
