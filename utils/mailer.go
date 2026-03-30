@@ -24,3 +24,24 @@ func SendVerificationEmail(toEmail, verificationLink, fromEmail, password string
 		[]byte(body),
 	)
 }
+
+func SendOTPEmail(toEmail, otp, fromEmail, password string) error {
+
+	smtpHost := "smtp.gmail.com"
+	smtpPort := "587"
+
+	auth := smtp.PlainAuth("", fromEmail, password, smtpHost)
+
+	body := fmt.Sprintf(
+		"Subject: Your Verification OTP\r\n\r\nYour OTP for email verification is: %s\r\n\nThis OTP expires in 5 minutes.",
+		otp,
+	)
+
+	return smtp.SendMail(
+		smtpHost+":"+smtpPort,
+		auth,
+		fromEmail,
+		[]string{toEmail},
+		[]byte(body),
+	)
+}

@@ -109,36 +109,32 @@ func (s *EmployeeService) CreateEmployee(
 		return "", err
 	}
 
-	// Generate verification token
-	token, err := utils.GenerateVerificationToken()
+	// Generate OTP
+	otp := utils.GenerateOTP()
+
+	// Store OTP in Redis
+	key := "otp:" + req.Email
+
+	err = config.RedisClient.Set(ctx, key, otp, time.Minute*5).Err()
 	if err != nil {
 		return "", err
 	}
 
-	// Store token in Redis with 10 min TTL
-	key := "verify:" + token
-	err = config.RedisClient.Set(ctx, key, req.Email, time.Minute*10).Err()
-	if err != nil {
-		return "", err
-	}
-
-	// Generate verification link
-	verificationLink := fmt.Sprintf(
-		"http://localhost:9000/verify?token=%s",
-		token,
-	)
-
-	// Send verification email via SMTP
-	err = utils.SendVerificationEmail(
+	// Send OTP email
+	err = utils.SendOTPEmail(
 		req.Email,
-		verificationLink,
+		otp,
 		config.SMTPEmail,
 		config.SMTPPassword,
 	)
+	fmt.Println("OTP generated:", otp)
+	fmt.Println("Sending email to:", req.Email)
 	if err != nil {
-		// don't fail registration if email fails — just log it
-		fmt.Println("Warning: failed to send verification email:", err)
+		fmt.Println("EMAIL ERROR:", err)
 	}
+	// if err != nil {
+	// 	fmt.Println("Warning: failed to send OTP email:", err)
+	// }
 
 	return id, nil
 }
@@ -279,13 +275,42 @@ func (s *EmployeeService) EmailVerification(
 		return err
 	}
 
-	// mark user verified in DB
 	err = s.Repo.MarkEmailVerified(ctx, email)
 	if err != nil {
 		return err
 	}
 
 	// delete token from redis
+	config.RedisClient.Del(ctx, key)
+
+	return nil
+}
+
+func (s *EmployeeService) VerifyOTP(
+	ctx context.Context,
+	email string,
+	userOTP string,
+) error {
+
+	key := "otp:" + email
+
+	storedOTP, err := config.RedisClient.Get(ctx, key).Result()
+	if err != nil {
+		if err == redis.Nil {
+			return errors.New("OTP expired")
+		}
+		return err
+	}
+
+	if storedOTP != userOTP {
+		return errors.New("invalid OTP")
+	}
+
+	err = s.Repo.MarkEmailVerified(ctx, email)
+	if err != nil {
+		return err
+	}
+
 	config.RedisClient.Del(ctx, key)
 
 	return nil
