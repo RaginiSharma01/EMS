@@ -144,7 +144,8 @@ func (s *EmployeeService) Login(
 
 	val, err := config.RedisClient.Get(ctx, key).Result()
 
-	if err == nil {
+	switch err {
+	case nil:
 
 		// Redis HIT
 		err := json.Unmarshal([]byte(val), &emp)
@@ -152,7 +153,7 @@ func (s *EmployeeService) Login(
 			return "", err
 		}
 
-	} else if err == redis.Nil {
+	case redis.Nil:
 
 		// Redis MISS → check DB
 		emp, err = s.Repo.GetEmployeeByEmail(ctx, req.Email)
@@ -170,7 +171,7 @@ func (s *EmployeeService) Login(
 			go config.RedisClient.Set(ctx, key, userJSON, time.Hour*24)
 		}
 
-	} else {
+	default:
 		return "", err
 	}
 
@@ -241,9 +242,9 @@ func (s *EmployeeService) GeneratePdf(employees []models.Employee) (*fpdf.Fpdf, 
 		pdf.CellFormat(widths[2], 8, emp.Email, "1", 0, "L", true, 0, "")
 		pdf.CellFormat(widths[3], 8, emp.PhoneNumber, "1", 0, "L", true, 0, "")
 		pdf.CellFormat(widths[4], 8, emp.DepartmentID, "1", 0, "L", true, 0, "")
-		pdf.CellFormat(widths[5], 8, fmt.Sprintf("Rs-%.2f", emp.Salary), "1", 0, "R", true, 0, "")
+		pdf.CellFormat(widths[5], 8, fmt.Sprintf("Rs-%.2f", emp.Salary), "1", 0, "L", true, 0, "")
 		pdf.CellFormat(widths[6], 8, emp.Location, "1", 0, "L", true, 0, "")
-		pdf.CellFormat(widths[7], 8, emp.JoiningDate.Format("02-Jan-2026"), "1", 1, "C", true, 0, "")
+		pdf.CellFormat(widths[7], 8, emp.JoiningDate.Format("02-Jan-2026"), "1", 1, "L", true, 0, "")
 	}
 
 	// Footer

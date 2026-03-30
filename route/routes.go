@@ -20,13 +20,14 @@ func SetupEmployeeRoutes(
 	app.Post("/login", authHandler.Login)
 	app.Get("/all", employeeHandler.GetAllEmployee)
 	app.Get("/pdf", employeeHandler.DownloadEmployeePDF)
-	
+
 	// for middleware
 	auth := app.Group("/employees", middleware.AuthMiddleware)
 	auth.Post("/assets", assetHandler.CreateAsset)
 	auth.Post("/assign-asset", assetHandler.AssignAsset)
 	auth.Get("/:id", employeeHandler.GetEmployeeByID)
 	auth.Post("/logout", middleware.AuthMiddleware, authHandler.Logout)
+	auth.Post("/verify-otp", authHandler.VerifyOTP)
 
 	// departments
 	departments := app.Group("/departments", middleware.AuthMiddleware)

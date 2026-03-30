@@ -210,3 +210,31 @@ func (h *EmployeeHandler) VerifyEmail(c fiber.Ctx) error {
 
 	return c.SendString("Email verified successfully")
 }
+
+func (h *AuthHandler) VerifyOTP(c fiber.Ctx) error {
+
+	var req models.VerifyOTPRequest
+
+	// parse request body
+	if err := c.Bind().Body(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "invalid request body",
+		})
+	}
+
+	err := h.Service.VerifyOTP(
+		c.Context(),
+		req.Email,
+		req.OTP,
+	)
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"message": "Email verified successfully",
+	})
+}
