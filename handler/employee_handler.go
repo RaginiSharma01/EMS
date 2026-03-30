@@ -211,7 +211,7 @@ func (h *EmployeeHandler) VerifyEmail(c fiber.Ctx) error {
 	return c.SendString("Email verified successfully")
 }
 
-func (h *AuthHandler) VerifyOTP(c fiber.Ctx) error {
+func (h *EmployeeHandler) VerifyOTP(c fiber.Ctx) error {
 
 	var req models.VerifyOTPRequest
 

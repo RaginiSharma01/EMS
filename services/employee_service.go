@@ -76,7 +76,7 @@ func (s *EmployeeService) CreateEmployee(
 		return "", errors.New("joining date is required")
 	}
 
-	layout := "01-Jan-2026"
+	layout := "2006-01-02"
 	parsedTime, err := time.Parse(layout, req.JoiningDate)
 	if err != nil {
 		return "", err
