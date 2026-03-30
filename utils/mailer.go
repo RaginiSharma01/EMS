@@ -2,46 +2,34 @@ package utils
 
 import (
 	"fmt"
-	"net/smtp"
+	"os"
+
+	"github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
-func SendVerificationEmail(toEmail, verificationLink, fromEmail, password string) error {
-	smtpHost := "smtp.gmail.com"
-	smtpPort := "587"
+func SendOTPEmail(toEmail, otp string) error {
 
-	auth := smtp.PlainAuth("", fromEmail, password, smtpHost)
+	from := mail.NewEmail("EMS System", "raginisharma.r07@gmail.com")
+	subject := "Your Verification OTP"
 
-	body := fmt.Sprintf(
-		"Subject: Verify your email\r\n\r\nClick the link below to verify your email:\r\n\r\n%s\r\n\r\nThis link expires in 10 minutes.",
-		verificationLink,
-	)
-
-	return smtp.SendMail(
-		smtpHost+":"+smtpPort,
-		auth,
-		fromEmail,
-		[]string{toEmail},
-		[]byte(body),
-	)
-}
-
-func SendOTPEmail(toEmail, otp, fromEmail, password string) error {
-
-	smtpHost := "smtp.gmail.com"
-	smtpPort := "587"
-
-	auth := smtp.PlainAuth("", fromEmail, password, smtpHost)
-
-	body := fmt.Sprintf(
-		"Subject: Your Verification OTP\r\n\r\nYour OTP for email verification is: %s\r\n\nThis OTP expires in 5 minutes.",
+	content := fmt.Sprintf(
+		"Your OTP for email verification is: %s\n\nThis OTP expires in 5 minutes.",
 		otp,
 	)
 
-	return smtp.SendMail(
-		smtpHost+":"+smtpPort,
-		auth,
-		fromEmail,
-		[]string{toEmail},
-		[]byte(body),
-	)
+	to := mail.NewEmail("", toEmail)
+
+	message := mail.NewSingleEmail(from, subject, to, content, content)
+
+	client := sendgrid.NewSendClient(os.Getenv("API_KEYS"))
+
+	response, err := client.Send(message)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("SendGrid Status:", response.StatusCode)
+
+	return nil
 }

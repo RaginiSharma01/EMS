@@ -121,12 +121,7 @@ func (s *EmployeeService) CreateEmployee(
 	}
 
 	// Send OTP email
-	err = utils.SendOTPEmail(
-		req.Email,
-		otp,
-		config.SMTPEmail,
-		config.SMTPPassword,
-	)
+	err = utils.SendOTPEmail(req.Email, otp)
 	fmt.Println("OTP generated:", otp)
 	fmt.Println("Sending email to:", req.Email)
 	if err != nil {
