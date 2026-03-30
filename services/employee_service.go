@@ -76,7 +76,7 @@ func (s *EmployeeService) CreateEmployee(
 		return "", errors.New("joining date is required")
 	}
 
-	layout := "2006-01-02"
+	layout := "01-Jan-2026"
 	parsedTime, err := time.Parse(layout, req.JoiningDate)
 	if err != nil {
 		return "", err
@@ -122,8 +122,8 @@ func (s *EmployeeService) CreateEmployee(
 
 	// Send OTP email
 	err = utils.SendOTPEmail(req.Email, otp)
-	fmt.Println("OTP generated:", otp)
-	fmt.Println("Sending email to:", req.Email)
+	fmt.Println("OTP generated")
+	//fmt.Println("Sending email to:", req.Email)
 	if err != nil {
 		fmt.Println("EMAIL ERROR:", err)
 	}

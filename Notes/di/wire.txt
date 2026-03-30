@@ -1,7 +1,7 @@
 - Wire is a compile-time dependency injection tool for the Go programming language, created by Google. 
 - It generates code that connects components explicitly, 
 - allowing Go developers to manage dependencies without using reflection or runtime frameworks.
-- The project is now archived but remains influential in Go's tooling ecosystem.
+
 
 
 
