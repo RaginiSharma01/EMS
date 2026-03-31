@@ -13,6 +13,8 @@ func SendOTPEmail(toEmail, otp string) error {
 	from := mail.NewEmail("EMS System", "raginisharma.r07@gmail.com")
 	subject := "Your Verification OTP"
 
+	verifyURL := fmt.Sprintf("https://www.google.com=%s", otp)
+
 	htmlContent := fmt.Sprintf(`
 <!DOCTYPE html>
 <html>
@@ -31,10 +33,17 @@ func SendOTPEmail(toEmail, otp string) error {
 
 <p>This OTP will expire in <b>5 minutes</b>.</p>
 
+<div style="text-align:center;margin-top:25px;">
+<a href="%s" 
+style="background:#1a73e8;color:white;padding:12px 20px;text-decoration:none;border-radius:5px;">
+Verify Email
+</a>
+</div>
+
 </div>
 </body>
 </html>
-`, otp)
+`, otp, verifyURL)
 
 	to := mail.NewEmail("", toEmail)
 
