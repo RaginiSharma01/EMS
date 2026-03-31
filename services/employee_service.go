@@ -279,26 +279,57 @@ func (s *EmployeeService) EmailVerification(ctx context.Context, token string) e
 
 func (s *EmployeeService) VerifyOTP(ctx context.Context, email string, userOTP string) error {
 
-	key := "otp:" + email
+    otpKey := "otp:" + email
+    attemptKey := "otp_attempt:" + email
+    blockKey := "otp_block:" + email
 
-	storedOTP, err := config.RedisClient.Get(ctx, key).Result()
-	if err != nil {
-		if err == redis.Nil {
-			return errors.New("OTP expired")
-		}
-		return err
-	}
+    //  Check if user is blocked
+    blocked, err := config.RedisClient.Get(ctx, blockKey).Result()
+    if err == nil && blocked == "blocked" {
+        return errors.New("too many attempts, try again after 24 hours")
+    }
 
-	if storedOTP != userOTP {
-		return errors.New("invalid OTP")
-	}
+    // 2 Get stored OTP
+    storedOTP, err := config.RedisClient.Get(ctx, otpKey).Result()
+    if err != nil {
+        if err == redis.Nil {
+            return errors.New("OTP expired, request a new one")
+        }
+        return err
+    }
 
-	err = s.Repo.MarkEmailVerified(ctx, email)
-	if err != nil {
-		return err
-	}
+    // 3️ If OTP incorrect
+    if storedOTP != userOTP {
 
-	config.RedisClient.Del(ctx, key)
+        attempts, _ := config.RedisClient.Incr(ctx, attemptKey).Result()
 
-	return nil
+        // set expiry for attempts counter
+        config.RedisClient.Expire(ctx, attemptKey, time.Minute*10)
+
+        if attempts >= 3 {
+
+            // block user
+            config.RedisClient.Set(ctx, blockKey, "blocked", time.Hour*24)
+
+            // delete otp
+            config.RedisClient.Del(ctx, otpKey)
+
+            return errors.New("too many wrong attempts, blocked for 24 hours")
+        }
+
+        return errors.New("invalid OTP")
+    }
+
+   
+
+    err = s.Repo.MarkEmailVerified(ctx, email)
+    if err != nil {
+        return err
+    }
+
+    // cleanup
+    config.RedisClient.Del(ctx, otpKey)
+    config.RedisClient.Del(ctx, attemptKey)
+
+    return nil
 }
